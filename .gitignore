@@ -1,0 +1,14 @@
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Local tools and generated files
+CLAUDE.local.md
+.claude/settings.local.json
+.claude/worktrees/
+node_modules/
+dist/
+.vercel/
+.DS_Store
+Thumbs.db
