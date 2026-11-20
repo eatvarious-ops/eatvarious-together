@@ -11,7 +11,7 @@ Node.js 24에서 이 디렉터리의 `npm ci`, `npm test`, `npm start`를 차례
 - 키가 없는 웹 실행에서는 Leaflet이 표준 OpenStreetMap 온라인 타일을 불러온다. 지도 하단에 현재 표시 중인 데이터의 출처가 나온다.
 - 내려받은 HTML을 직접 열거나 타일 요청이 실패하면 포함된 캠퍼스 지도로 탐색할 수 있다. 이 지도에는 OpenStreetMap에서 추출한 실제 도로·건물·보행로가 들어 있다. 예시 식당의 이름과 좌표는 가상 데이터다.
 - 서비스에 NAVER 지도를 적용하려면 NAVER Cloud 콘솔의 Maps에서 애플리케이션을 등록하고 Dynamic Map을 선택한다. Web 서비스 URL에는 브라우저에서 사용할 주소를 등록한다. 로컬 확인 주소는 `http://127.0.0.1:4173`이다. 호스팅 시 사용할 도메인도 등록한다.
-- 애플리케이션의 공개 Client ID를 빌드 환경변수 `ITDA_NAVER_CLIENT_ID`에 지정한다. macOS/Linux에서는 `ITDA_NAVER_CLIENT_ID='발급받은_Client_ID' npm run build` 후 `npm start`를 실행하고 등록한 주소를 연다. PowerShell에서는 `$env:ITDA_NAVER_CLIENT_ID='발급받은_Client_ID'` 설정 후 빌드한다. 이 설정은 빌드 시 반영되며 Client Secret은 사용하지 않는다. 콘솔에서 인증·사용량도 확인한다. [NAVER 공식 시작 안내](https://navermaps.github.io/maps.js.ncp/docs/tutorial-2-Getting-Started.html)
+- 팀 NAVER Maps 공개 Client ID(`vhkb2gac8j`)가 `build.mjs`에 기본값으로 들어 있어 `npm run build`만 해도 NAVER 지도가 적용된다. 허용 주소는 `http://127.0.0.1:4173`, `http://localhost:4173`이며 배포 도메인은 콘솔에서 추가한다. 다른 Client ID는 `ITDA_NAVER_CLIENT_ID`로 덮어쓰고, `node build.mjs --no-naver`는 키 없이 빌드한다(`npm test`가 오프라인 대체 지도 검사에 사용). Client Secret은 사용하지 않는다. [NAVER 공식 시작 안내](https://navermaps.github.io/maps.js.ncp/docs/tutorial-2-Getting-Started.html)
 
 ### 오프라인 데이터 출처
 
