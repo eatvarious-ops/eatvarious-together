@@ -10,9 +10,16 @@ AI 코딩 도구에서 이 저장소 폴더를 열고 아래 한 문장에 맡�
 
 예: “팀 규칙대로 식당 및 메뉴 검색 작업해 줘.” AI가 [팀 작업 지침](AGENTS.md)에 따라 자료 확인, 작업 등록 확인, 구현, 검사, 셀프리뷰, PR 준비를 이어서 수행합니다. 팀원은 필요한 결정에 답하고 마지막에 결과를 직접 확인하면 됩니다. 준비가 필요한 첫 사용자는 [첫 작업 안내](docs/first-task.md)를 참고하세요. PR은 성은영(`@Eun-Y0ung`)의 승인 후 병합합니다.
 
+## 프로젝트 자료
+
+- [팀 Google Drive](https://drive.google.com/drive/folders/161wj4bWoihZ3NlYlhuZxB8xf_3R2SZ_g) — 프로젝트 공유 자료를 찾는 시작 위치입니다.
+- [설계 자료 폴더](https://drive.google.com/drive/folders/1dQFtCVjYneL9wQ7B_lJL9zVF24d1OhKj) — PRD와 기능정의서를 확인합니다.
+- [Figma 와이어프레임](https://www.figma.com/design/TWl3V8WqKMYTOxBvd6qusY/%EB%A7%90%EB%B9%9B-%EC%99%80%EC%9D%B4%EC%96%B4%ED%94%84%EB%A0%88%EC%9E%84?node-id=0-1) — 화면 작업 시 관련 화면과 흐름을 확인합니다.
+
+자료를 읽으려면 각 서비스의 접근 권한과 AI 도구의 연결이 필요할 수 있습니다. 와이어프레임에 표시된 모든 화면이 이번 작업 범위에 포함되는 것은 아닙니다.
+
 ## 팀 문서
 
-- [프로젝트 참고 자료 (Google Drive)](https://drive.google.com/drive/folders/1dQFtCVjYneL9wQ7B_lJL9zVF24d1OhKj) — 작업과 관련된 자료를 찾을 때 참조합니다. 접근 권한이 필요할 수 있습니다.
 - [서비스 범위](docs/requirements.md)
 - [식재료·필터·제보 정책](docs/data-policy.md)
 - [작업 목록](docs/tasks.md)
