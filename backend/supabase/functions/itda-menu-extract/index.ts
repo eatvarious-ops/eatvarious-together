@@ -14,32 +14,45 @@ const PROMPT = `서울대학교 학내 식당의 키오스크 또는 메뉴판 �
    menus에는 표시가 특정 메뉴를 가리키면 그 메뉴명을, 매장 전체 표시면 빈 배열을 적는다. text에는 근거 문구를 그대로 적는다.
 메뉴 이름이나 음식 사진으로 재료를 추측하지 않는다. 표시가 없으면 marks는 빈 배열이다.`;
 
-const TOOL = {
-  name: "report_menu",
-  description: "사진에서 읽은 메뉴명과 인쇄된 원산지·알레르기 표시",
-  input_schema: {
-    type: "object",
-    properties: {
-      menus: {
-        type: "array",
-        items: { type: "object", properties: { ko: { type: "string" }, en: { type: "string" } }, required: ["ko", "en"] },
-      },
-      marks: {
-        type: "array",
-        items: {
-          type: "object",
-          properties: {
-            ingredient: { type: "string", enum: INGREDIENTS },
-            menus: { type: "array", items: { type: "string" } },
-            text: { type: "string" },
-          },
-          required: ["ingredient", "menus", "text"],
-        },
+// Structured Outputs (strict): every property required, no extra keys.
+const SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    menus: {
+      type: "array",
+      items: {
+        type: "object", additionalProperties: false,
+        properties: { ko: { type: "string" }, en: { type: "string" } },
+        required: ["ko", "en"],
       },
     },
-    required: ["menus", "marks"],
+    marks: {
+      type: "array",
+      items: {
+        type: "object", additionalProperties: false,
+        properties: {
+          ingredient: { type: "string", enum: INGREDIENTS },
+          menus: { type: "array", items: { type: "string" } },
+          text: { type: "string" },
+        },
+        required: ["ingredient", "menus", "text"],
+      },
+    },
   },
+  required: ["menus", "marks"],
 };
+
+// The Responses API returns the JSON as output_text inside a message item.
+export function outputJson(data: unknown): unknown {
+  const items = Array.isArray((data as { output?: unknown })?.output) ? (data as { output: unknown[] }).output : [];
+  for (const item of items as { type?: string; content?: { type?: string; text?: string }[] }[]) {
+    if (item?.type !== "message" || !Array.isArray(item.content)) continue;
+    const part = item.content.find((c) => c?.type === "output_text" && typeof c.text === "string");
+    if (part) return JSON.parse(part.text as string);
+  }
+  return null;
+}
 
 const clean = (v: unknown, max: number) =>
   typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, max) : "";
@@ -79,32 +92,31 @@ Deno.serve(async (req) => {
       if (!TYPES.includes(img?.mediaType) || typeof img?.data !== "string" || !/^[A-Za-z0-9+/]+=*$/.test(img.data) ||
         Math.floor(img.data.length * 3 / 4) > MAX_BYTES) return reply(400, { code: "invalid_images" });
     }
-    const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
+    const apiKey = Deno.env.get("OPENAI_API_KEY");
     if (!apiKey) return reply(503, { code: "extract_not_configured" });
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
+    const res = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
-      headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: Deno.env.get("ITDA_MENU_MODEL") || "claude-sonnet-5-5",
-        max_tokens: 4096,
-        tools: [TOOL],
-        tool_choice: { type: "tool", name: TOOL.name },
-        messages: [{
+        model: Deno.env.get("ITDA_MENU_MODEL") || "gpt-5.4",
+        input: [{
           role: "user",
           content: [
             ...images.map((img: { mediaType: string; data: string }) => ({
-              type: "image", source: { type: "base64", media_type: img.mediaType, data: img.data },
+              type: "input_image", image_url: `data:${img.mediaType};base64,${img.data}`, detail: "high",
             })),
-            { type: "text", text: PROMPT },
+            { type: "input_text", text: PROMPT },
           ],
         }],
+        text: { format: { type: "json_schema", name: "report_menu", strict: true, schema: SCHEMA } },
       }),
     }).catch(() => null);
     if (!res || !res.ok) return reply(502, { code: "extract_failed" });
     const data = await res.json().catch(() => null);
-    const used = Array.isArray(data?.content) ? data.content.find((c: { type?: string }) => c?.type === "tool_use") : null;
-    if (!used) return reply(502, { code: "extract_failed" });
-    const result = sanitize(used.input);
+    let parsed: unknown = null;
+    try { parsed = outputJson(data); } catch { parsed = null; }
+    if (!parsed) return reply(502, { code: "extract_failed" });
+    const result = sanitize(parsed);
     return reply(200, { code: result.menus.length ? "ok" : "no_menus", ...result });
   } catch {
     return reply(503, { code: "unavailable" });
