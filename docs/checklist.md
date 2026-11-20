@@ -46,3 +46,8 @@ AI가 작업 번호와 이름, 확인할 동작, 정상·대표 예외 조건, �
 - 비로그인 식당 조회와 제보 시작 시 로그인 안내를 확인한다.
 - 개발 Supabase에서 최초 Google 로그인, 제보 양식 복귀, 새로고침 후 세션 유지, 로그아웃과 일반 회원의 운영진 접근 제한을 확인한다.
 - Google 로그인 취소·오류 뒤 원래 화면에서 재시도할 수 있는지 확인한다.
+## 7 · 체험용 잇다.html 미리보기 공유
+
+- preview/잇다.html이 기록한 브랜치·커밋의 `npm run build` 결과(frontend/dist/index.html)와 같다.
+- preview/README.md에 출처 커밋, 포함된 공개 설정(NAVER Client ID), 실행 방법, 체험 모드 한계가 적혀 있다.
+- 비밀값(Client Secret·서비스 키)이 포함되지 않았다.
