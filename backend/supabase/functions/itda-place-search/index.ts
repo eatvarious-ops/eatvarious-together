@@ -47,8 +47,16 @@ Deno.serve(async (req) => {
     const res = await fetch(endpoint, {
       headers: { "X-NCP-APIGW-API-KEY-ID": id, "X-NCP-APIGW-API-KEY": secret },
     }).catch(() => null);
-    if (!res || !res.ok) return reply(502, { code: "search_failed" });
+    if (!res) {
+      console.error("place-search: NAVER request did not complete");
+      return reply(502, { code: "search_failed", reason: "network" });
+    }
     const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      // Logged for the Supabase function logs; credentials are never logged.
+      console.error("place-search: NAVER", res.status, JSON.stringify(data)?.slice(0, 300) || "");
+      return reply(502, { code: "search_failed", reason: String(res.status) });
+    }
     const items: Record<string, unknown>[] = Array.isArray(data?.items) ? data.items : [];
     const all = items.map(toCandidate).filter((c) => c.ko && Number.isFinite(c.lat) && Number.isFinite(c.lng));
     const candidates = all.filter((c) => inCampus(c.lat, c.lng));

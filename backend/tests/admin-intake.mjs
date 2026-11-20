@@ -27,6 +27,8 @@ globalThis.fetch = async (url, options = {}) => {
   }
   if (u.host === "api.openai.com") {
     lastModel = { url: u, headers: options.headers, body: JSON.parse(options.body) };
+    if (modelInput === "http-error")
+      return Response.json({ error: { type: "invalid_request_error", code: "model_not_found", message: "The model does not exist" } }, { status: 404 });
     if (modelInput === "refusal")
       return Response.json({ output: [{ type: "message", content: [{ type: "refusal", refusal: "no" }] }] });
     return Response.json({ output: [
@@ -104,7 +106,18 @@ assert.equal(parts.filter((c) => c.type === "input_image").length, 2);
 assert.match(parts[0].image_url, /^data:image\/jpeg;base64,/);
 assert.match(parts.at(-1).text, /추측하지 않는다/);
 modelInput = "refusal";
-assert.equal((await call(menuExtract, "admin-token", { images: [img] })).status, 502);
+const errorsLogged = [];
+const realError = console.error;
+console.error = (...a) => errorsLogged.push(a.join(" "));
+res = await call(menuExtract, "admin-token", { images: [img] });
+assert.equal(res.status, 502);
+assert.equal((await res.json()).reason, "no_output");
+modelInput = "http-error";
+res = await call(menuExtract, "admin-token", { images: [img] });
+assert.deepEqual(await res.json(), { code: "extract_failed", reason: "model_not_found" });
+console.error = realError;
+assert.match(errorsLogged.at(-1), /OpenAI 404 invalid_request_error model_not_found/);
+assert.ok(errorsLogged.every((l) => !l.includes("model-key")));
 assert.equal(menu.outputJson({}), null);
 modelInput = { menus: [], marks: [] };
 assert.equal((await (await call(menuExtract, "admin-token", { images: [img] })).json()).code, "no_menus");
