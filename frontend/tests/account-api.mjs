@@ -32,6 +32,7 @@ accounts.set("reviewer", {
   user: makeUser("reviewer", "admin"),
 });
 const sessions = new Map();
+export const intakeCalls = [];
 export async function mockFetch(input, init = {}) {
   const url = new URL(input.url || input),
     h = new Headers(init.headers || input.headers),
@@ -74,6 +75,27 @@ export async function mockFetch(input, init = {}) {
     });
   }
   if (path.endsWith("/logout")) return new Response(null, { status: 204 });
+  if (path.endsWith("/itda-place-search") || path.endsWith("/itda-menu-extract")) {
+    if (user?.app_metadata.role !== "admin")
+      return json({ code: "admin_required" }, 403);
+    intakeCalls.push({ path, body });
+    if (path.endsWith("/itda-place-search"))
+      return json({
+        code: "ok",
+        query: "서울대 " + body.query,
+        excluded: 1,
+        candidates: [
+          { ko: "테스트 카페 서울대점", address: "관악로 1 301동", phone: "02-880-0000",
+            category: "카페", lat: 37.452, lng: 126.952 },
+        ],
+      });
+    return json({
+      code: "ok",
+      menus: [{ ko: "햄 샌드위치", en: "Ham Sandwich" }, { ko: "아메리카노", en: "" }],
+      marks: [{ ingredient: "pork", menus: ["햄 샌드위치"], text: "돼지고기: 국내산" },
+        { ingredient: "dairy", menus: [], text: "우유 함유" }],
+    });
+  }
   if (path.endsWith("/review_report")) {
     if (user?.app_metadata.role !== "admin") return json({}, 403);
     const r = catalog.reports.find((r) => r.id === body.p_id);

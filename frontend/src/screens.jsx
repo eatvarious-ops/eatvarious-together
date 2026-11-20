@@ -35,7 +35,7 @@ import MeatInput, { meatKinds } from "./MeatInput";
 import CampusMap, { inCampus } from "./CampusMap";
 import { Dialog, Chip, Photo, useApp, message } from "./common";
 import { submitReport, review, uploadPhoto, naverKey, remote } from "./store";
-function Back({ onClick }) {
+export function Back({ onClick }) {
   const { back, t } = useApp();
   return (
     <button className="back" onClick={onClick || back}>
@@ -44,7 +44,7 @@ function Back({ onClick }) {
     </button>
   );
 }
-function Title({ eyebrow, children, sub }) {
+export function Title({ eyebrow, children, sub }) {
   return (
     <div className="sectionTitle">
       <span className="eyebrow">{eyebrow}</span>
@@ -64,7 +64,7 @@ function Sample() {
   );
 }
 export function Detail() {
-  const { route, db, idx, t, lang, go, auth, selected } = useApp(),
+  const { route, db, idx, t, lang, go, auth, selected, user } = useApp(),
     isMenu = route.page === "menu";
   const m = isMenu
       ? db.menus.find((x) => x.id === route.id && !x.hidden)
@@ -168,10 +168,32 @@ export function Detail() {
                   {t("메뉴 목록", "Menus")}{" "}
                   <b className="count">{menus.length}</b>
                 </h2>
-                <button className="secondary" onClick={() => form("menu")}>
-                  <Plus size={15} />
-                  {t("메뉴 추가하기", "Add a menu")}
-                </button>
+                <div className="inline">
+                  {user?.admin && (
+                    <>
+                      <button
+                        className="secondary"
+                        onClick={() => go({ page: "intake-menus", rid: r.id })}
+                      >
+                        <ImagePlus size={15} />
+                        {t("메뉴 일괄 등록", "Add menus in bulk")}
+                      </button>
+                      <button
+                        className="secondary"
+                        onClick={() =>
+                          go({ page: "intake-ingredients", rid: r.id })
+                        }
+                      >
+                        <Pencil size={15} />
+                        {t("식재료 일괄 입력", "Ingredients in bulk")}
+                      </button>
+                    </>
+                  )}
+                  <button className="secondary" onClick={() => form("menu")}>
+                    <Plus size={15} />
+                    {t("메뉴 추가하기", "Add a menu")}
+                  </button>
+                </div>
               </div>
               {menus.map((item) => (
                 <button
