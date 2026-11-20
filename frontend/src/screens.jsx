@@ -31,6 +31,7 @@ import {
   norm,
   higherPriority,
 } from "./domain";
+import MeatInput, { meatKinds } from "./MeatInput";
 import CampusMap, { inCampus } from "./CampusMap";
 import { Dialog, Chip, Photo, useApp, message } from "./common";
 import { submitReport, review, uploadPhoto, naverKey, remote } from "./store";
@@ -299,7 +300,12 @@ export function ReportForm() {
       if (newR && (!changes.ko || !pick)) throw new Error("requiredLocation");
       if (newR && !inCampus(pick.lat, pick.lng)) throw new Error("outside");
       if (newMenu && !changes.ko) throw new Error("requiredName");
-      if ((edit || fields.some((k) => k in changes)) && !method)
+      if (
+        (edit ||
+          (newMenu && values.unidentifiedMeat) ||
+          fields.some((k) => k in changes)) &&
+        !method
+      )
         throw new Error("method");
       const dupe = newMenu
         ? db.menus.find(
@@ -340,7 +346,15 @@ export function ReportForm() {
             .join(" · "),
           changes,
           method,
-          memo: memo.trim(),
+          memo:
+            newMenu && values.unidentifiedMeat
+              ? [
+                  t("고기 포함 · 종류 모름", "Meat present · type unknown"),
+                  memo.trim(),
+                ]
+                  .filter(Boolean)
+                  .join("\n")
+              : memo.trim(),
           photo: image,
         },
         user,
@@ -447,7 +461,18 @@ export function ReportForm() {
           <>
             <fieldset className="formIngredients">
               <legend>{t("식재료 포함 여부", "Ingredient status")}</legend>
-              {fields.map((k) => (
+              {newMenu && (
+                <MeatInput
+                  values={values}
+                  onChange={(patch) =>
+                    setValues((old) => ({ ...old, ...patch }))
+                  }
+                />
+              )}
+              {(newMenu
+                ? fields.filter((k) => !meatKinds.includes(k))
+                : fields
+              ).map((k) => (
                 <Label key={k} text={ingredients[k][idx]}>
                   <select
                     value={values[k]}

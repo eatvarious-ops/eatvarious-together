@@ -1195,3 +1195,40 @@ legend {
   font-size: 0.85rem;
   font-weight: 700;
 }
+
+.meatInput {
+  padding: 8px 0 13px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.meatInput small {
+  display: block;
+  margin: 3px 0 10px;
+}
+.meatChoices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.meatChoices button {
+  padding: 9px 13px;
+  border: 1px solid #c9d5cc;
+  color: #304b3c;
+  border-radius: 12px;
+  min-height: 42px;
+  font-weight: 650;
+  background: #fff;
+  font-size: 14px;
+}
+.meatChoices button[aria-pressed="true"] {
+  color: white;
+  background: #226046;
+  border-color: #226046;
+}
+.meatChoices button[aria-pressed="true"]::before {
+  content: "✓ ";
+  font-weight: 800;
+}
+.meatPresets {
+  margin-top: 10px;
+}
