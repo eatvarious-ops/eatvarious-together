@@ -1,0 +1,319 @@
+.itda-map {
+  color: #29423a;
+  position: relative;
+  width: 100%;
+  height: clamp(290px, 34vw, 410px);
+  overflow: hidden;
+  border-radius: 20px;
+  border: 1px solid #cfdbd1;
+  background: #dae7d7;
+  isolation: isolate;
+  font-family: inherit;
+}
+.itda-map,
+.itda-map * {
+  box-sizing: border-box;
+}
+.itda-map .itda-map-surface,
+.itda-native-map,
+.itda-map-art,
+.itda-map-status {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.itda-map-surface {
+  overflow: hidden;
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
+}
+.itda-map-surface:active {
+  cursor: grabbing;
+}
+.itda-map-surface.is-picker {
+  cursor: crosshair;
+}
+.itda-map-art {
+  pointer-events: none;
+}
+.itda-map-label {
+  pointer-events: none;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: #65806c;
+  letter-spacing: 0.015em;
+  text-shadow:
+    0 1px 2px #f2f4e9,
+    1px 0 2px #f2f4e9,
+    -1px 0 2px #f2f4e9;
+}
+.itda-map .itda-map-pin {
+  position: absolute;
+  flex-direction: column;
+  align-items: center;
+  display: flex;
+  transform: translate(-50%, -100%);
+  width: 42px;
+  height: 40px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  justify-content: flex-end;
+  touch-action: manipulation;
+  z-index: 2;
+  color: #243e32;
+}
+.itda-map .itda-map-pin:hover,
+.itda-map .itda-map-pin:focus-visible {
+  z-index: 4;
+  background: transparent;
+}
+.itda-map .itda-map-pin:focus-visible,
+.itda-map button:focus-visible {
+  outline: 3px solid #176e61;
+  outline-offset: 2px;
+}
+.itda-pin-icon,
+.itda-native-pin {
+  width: 30px;
+  height: 36px;
+  display: block;
+  filter: drop-shadow(0 2px 2px #29483948);
+}
+.itda-pin-icon svg,
+.itda-native-pin svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.itda-pin-label {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, -1px);
+  border-radius: 6px;
+  background: #fffffff4;
+  border: 1px solid #c3d1c5;
+  color: #244534;
+  padding: 0.16rem 0.43rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.28;
+  white-space: nowrap;
+  box-shadow: 0 2px 3px #23472b19;
+  pointer-events: none;
+}
+.itda-map-pin:hover .itda-pin-label,
+.itda-map-pin:focus-visible .itda-pin-label {
+  background: #fff;
+  border-color: #698a74;
+}
+.itda-map-caption,
+.itda-north,
+.itda-map-tools,
+.itda-map-source {
+  position: absolute;
+  z-index: 5;
+}
+.itda-map-caption {
+  top: 14px;
+  left: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #345643;
+  background: #fffffff2;
+  border: 1px solid #d0dacf;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  box-shadow: 0 2px 6px #1e422912;
+  pointer-events: none;
+}
+.itda-north {
+  top: 13px;
+  right: 18px;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  color: #486551;
+  line-height: 1;
+  font: 700 10px/1 system-ui;
+  pointer-events: none;
+}
+.itda-north i {
+  width: 12px;
+  height: 17px;
+  display: block;
+  clip-path: polygon(50% 0, 100% 100%, 50% 74%, 0 100%);
+  background: linear-gradient(to right, #527564 50%, #fff 50%);
+  filter: drop-shadow(0 1px 1px #47674e);
+}
+.itda-map-tools {
+  bottom: 16px;
+  right: 14px;
+  display: grid;
+  gap: 8px;
+}
+.itda-map-zoom,
+.itda-map-tools > button {
+  box-shadow: 0 2px 7px #233d2c24;
+  border-radius: 9px;
+  overflow: hidden;
+  background: #fff;
+}
+.itda-map .itda-map-tools button {
+  display: grid;
+  place-items: center;
+  color: #365b47;
+  background: #fff;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  width: 35px;
+  height: 34px;
+  box-shadow: none;
+  cursor: pointer;
+}
+.itda-map .itda-map-tools > button,
+.itda-map-zoom {
+  border: 1px solid #bdcdbf;
+}
+.itda-map .itda-map-tools > button {
+  border-radius: 9px;
+  box-shadow: 0 2px 7px #233d2c24;
+  width: 37px;
+  height: 36px;
+}
+.itda-map .itda-map-zoom button + button {
+  border-top: 1px solid #d4dfd5;
+}
+.itda-map .itda-map-tools button:hover {
+  background: #eff5ef;
+}
+.itda-map-source {
+  left: 8px;
+  bottom: 5px;
+  font-size: 0.66rem;
+  color: #496254;
+  line-height: 1.45;
+  border-radius: 4px;
+  padding: 1px 5px;
+  background: #f7fbf4cf;
+  pointer-events: none;
+}
+.itda-map-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #eff4ed;
+  color: #344e40;
+  text-align: center;
+}
+.itda-map-status button {
+  padding: 7px 12px;
+  border: 1px solid #adc0af;
+  border-radius: 8px;
+  background: white;
+  color: #31573d;
+  cursor: pointer;
+}
+.itda-gps {
+  display: block;
+  height: 16px;
+  width: 16px;
+  background: #2683ee;
+  border: 3px solid white;
+  border-radius: 50%;
+  box-shadow: 0 0 0 5px #388ff633;
+  z-index: 3;
+  pointer-events: none;
+}
+.itda-on-map,
+.itda-picked {
+  position: absolute;
+  transform: translate(-50%, -50%);
+}
+.itda-picked {
+  font-size: 1rem;
+  font-weight: 700;
+  background: #2c5747;
+  color: white;
+  display: grid;
+  place-items: center;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 4px #39795a63;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 4;
+}
+@media (max-width: 600px) {
+  .itda-map {
+    height: 310px;
+    border-radius: 15px;
+  }
+  .itda-map-caption {
+    top: 10px;
+    left: 10px;
+  }
+  .itda-map-tools {
+    right: 9px;
+    bottom: 12px;
+  }
+  .itda-pin-icon {
+    width: 26px;
+    height: 32px;
+  }
+  .itda-pin-label {
+    font-size: 0.7rem;
+    padding: 2px 4px;
+  }
+  .itda-map-label {
+    font-size: 0.61rem;
+  }
+}
+.itda-map-surface:focus-visible {
+  outline: 3px solid #387a60;
+  outline-offset: -3px;
+}
+.itda-map-pin.label-right .itda-pin-label {
+  left: calc(50% + 14px);
+  top: auto;
+  bottom: 5px;
+  transform: none;
+}
+.itda-map-pin.label-left .itda-pin-label {
+  left: auto;
+  right: calc(50% + 14px);
+  top: auto;
+  bottom: 5px;
+  transform: none;
+}
+.itda-map-pin.label-top .itda-pin-label {
+  top: auto;
+  bottom: 35px;
+  transform: translateX(-50%);
+}
+.itda-map-pin.label-quiet .itda-pin-label {
+  visibility: hidden;
+}
+.itda-map-pin.label-quiet:hover .itda-pin-label,
+.itda-map-pin.label-quiet:focus-visible .itda-pin-label {
+  visibility: visible;
+}
