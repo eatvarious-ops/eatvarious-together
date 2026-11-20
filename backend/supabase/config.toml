@@ -1,0 +1,4 @@
+project_id = "eatvarious-together"
+
+[functions.itda-student-signup]
+verify_jwt = false

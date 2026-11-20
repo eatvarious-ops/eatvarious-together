@@ -5,7 +5,8 @@
 | 작업 | 요청 | 반환과 예외 |
 | --- | --- | --- |
 | 탐색 | restaurants, menus에서 hidden=false인 id, data 조회 | 식당·메뉴 배열. 메뉴의 data.rid가 식당을 가리킨다. 조회 실패 시 재시도 가능 |
-| 제보 등록 | reports에 type, rid, mid, changes, method, memo, photo 제출 | Google 인증 필요. 서버가 사용자와 접수 시각·pending 상태를 기록. 중복·대상 누락·권한 오류는 공개 데이터를 바꾸지 않음 |
+| 학생 가입 | itda-student-signup에 username, password 제출 | 학생으로 생성되면 201, 중복 아이디는 409, 가입 제한은 429 |
+| 제보 등록 | reports에 type, rid, mid, changes, method, memo, photo 제출 | 로그인한 학생 또는 운영진 계정 필요. 기존 Google 세션도 허용. 서버가 사용자와 접수 시각·pending 상태를 기록. 중복·대상 누락·권한 오류는 공개 데이터를 바꾸지 않음 |
 | 내 제보·검토함 | reports 조회 | 사용자에게 본인 기록, 운영진에게 전체 기록. 익명은 빈 목록 |
 | 승인·반려 | review_report(p_id, p_approve, p_keys, p_reason) | 승인된 실제 항목을 approved_keys에 보존. approved, rejected 또는 failed. 이미 처리한 제보와 운영진 외 요청은 거부 |
 | 사진 | 비공개 evidence 버킷에 사용자 UUID로 시작하는 경로로 업로드 | 소유자·운영진 접근. 공개된 식당·메뉴에서 참조하는 사진만 다른 사용자가 읽을 수 있음 |

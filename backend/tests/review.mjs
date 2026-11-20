@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import assert from 'node:assert/strict'
 const d=new PGlite()
 await d.exec(`
-create schema auth; create schema storage; create role anon; create role authenticated;
+create schema auth; create schema storage; create role anon; create role authenticated; create role service_role bypassrls;
 create table auth.users(id uuid primary key);
 create function auth.uid() returns uuid language sql stable as $$select (current_setting('test.jwt',true)::jsonb->>'sub')::uuid$$;
 create function auth.jwt() returns jsonb language sql stable as $$select current_setting('test.jwt',true)::jsonb$$;
@@ -19,9 +19,9 @@ await d.exec(setup)
 await d.exec(setup)
 const u='00000000-0000-4000-a000-000000000001',a='00000000-0000-4000-a000-000000000002'
 await d.query('insert into auth.users values ($1),($2)',[u,a])
-async function role(id){
+async function role(id,provider='email'){
  await d.exec('reset role')
- const jwt={sub:id,user_metadata:{full_name:id===u?'Student':'Moderator'},app_metadata:{provider:'google',role:id===a?'admin':'user'}}
+ const jwt={sub:id,user_metadata:{full_name:id===u?'Student':'Moderator'},app_metadata:{provider,role:id===a?'admin':'student'}}
  await d.query("select set_config('test.jwt',$1,false)",[JSON.stringify(jwt)])
  await d.exec('set role '+(id?'authenticated':'anon'))
 }
@@ -34,6 +34,20 @@ async function submit(id,type,attrs={}){
 async function review(id,approve,keys,reason=''){
  const [{review_report}]=await rows('select public.review_report($1,$2,$3,$4)',[id,approve,keys,reason]);return review_report
 }
+const quota=fs.readFileSync(new URL('../signup-limit.sql',import.meta.url),'utf8')
+await d.exec(quota)
+await d.exec(quota)
+await d.exec('set role authenticated')
+await assert.rejects(()=>rows("select public.itda_allow_signup(repeat('0',64))"),/permission denied/)
+await d.exec('reset role; set role service_role')
+for(let i=0;i<11;i++){
+ const [entry]=await rows("select public.itda_allow_signup(repeat('0',64)) as allowed")
+ assert.equal(entry.allowed,i<10)
+}
+await role(u,'google')
+await d.exec('begin')
+await submit('legacy-google','restaurant',{rid:'legacy',changes:{ko:'Test',lat:37.46,lng:126.95}})
+await d.exec('rollback')
 await role(u)
 await submit('r-request','restaurant',{changes:{ko:'Test',lat:37.46,lng:126.95},status:'approved',reviewer:'forged',author:'forged'})
 assert.deepEqual(await rows('select author,status,reviewer from public.reports'),[{author:'Student',status:'pending',reviewer:null}])

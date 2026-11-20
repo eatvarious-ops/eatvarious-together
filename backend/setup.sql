@@ -134,10 +134,13 @@ declare
   profile jsonb := auth.jwt();
 begin
   new.uid := auth.uid();
-  if new.uid is null or not coalesce(profile->'app_metadata'->>'provider'='google'
-    or (profile->'app_metadata'->'providers') ? 'google',false)
-    then raise exception 'GOOGLE_LOGIN_REQUIRED'; end if;
-  new.author := left(coalesce(nullif(profile->'user_metadata'->>'full_name',''),
+  if new.uid is null or not coalesce(
+    profile->'app_metadata'->>'provider'='google'
+    or (profile->'app_metadata'->'providers') ? 'google'
+    or (profile->'app_metadata'->>'provider'='email'
+        and profile->'app_metadata'->>'role' in ('student','admin')),false)
+    then raise exception 'ACCOUNT_LOGIN_REQUIRED'; end if;
+  new.author := left(coalesce(nullif(profile->'user_metadata'->>'username',''),nullif(profile->'user_metadata'->>'full_name',''),
     nullif(profile->'user_metadata'->>'name',''), profile->>'email', new.uid::text), 180);
   new.status := 'pending';
   new.created_at := clock_timestamp();

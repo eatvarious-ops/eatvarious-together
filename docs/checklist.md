@@ -69,3 +69,7 @@ AI가 작업 번호와 이름, 확인할 동작, 정상·대표 예외 조건, �
 - main의 frontend에서 `npm test`가 통과하고 기본 빌드(`npm run build`)에 NAVER 공개 Client ID가 포함된다.
 - Google 로그인(작업 6)과 지도(작업 6) 변경이 함께 유지된다.
 - preview/가 삭제되고, 병합 후 Vercel 배포(https://itda-snu.vercel.app)가 main의 frontend 빌드로 NAVER 지도를 표시한다.
+
+## 10 · 학생 계정 발급과 제보 권한
+
+- 가입 권한·중복·가입 횟수 제한과 학생 제보 및 운영진 검토를 검증한다.
