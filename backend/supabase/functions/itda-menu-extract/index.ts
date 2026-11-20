@@ -111,11 +111,23 @@ Deno.serve(async (req) => {
         text: { format: { type: "json_schema", name: "report_menu", strict: true, schema: SCHEMA } },
       }),
     }).catch(() => null);
-    if (!res || !res.ok) return reply(502, { code: "extract_failed" });
+    if (!res) {
+      console.error("menu-extract: OpenAI request did not complete");
+      return reply(502, { code: "extract_failed", reason: "network" });
+    }
     const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      // Logged for the Supabase function logs; the key itself is never logged.
+      const err = data?.error || {};
+      console.error("menu-extract: OpenAI", res.status, err.type || "", err.code || "", err.message || "");
+      return reply(502, { code: "extract_failed", reason: String(err.code || err.type || res.status) });
+    }
     let parsed: unknown = null;
     try { parsed = outputJson(data); } catch { parsed = null; }
-    if (!parsed) return reply(502, { code: "extract_failed" });
+    if (!parsed) {
+      console.error("menu-extract: no structured output", data?.status || "", JSON.stringify(data?.incomplete_details || data?.output?.map?.((o: { type?: string }) => o?.type) || ""));
+      return reply(502, { code: "extract_failed", reason: "no_output" });
+    }
     const result = sanitize(parsed);
     return reply(200, { code: result.menus.length ? "ok" : "no_menus", ...result });
   } catch {
