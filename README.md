@@ -2,6 +2,8 @@
 
 식이 제한이 있는 서울대학교 구성원이 학내 비학식당의 메뉴별 식재료 정보를 확인할 수 있도록 돕는 웹앱
 
+최신 PRD와 기능정의서 v1.1.0(2026-11-20 확인)을 기준으로 한국어·영어 화면, 7개 식재료 항목, 6개 필터 태그를 제공합니다. 조회는 로그인 없이 가능하고, 구글 로그인 후 제보·신고와 내 제보 확인을 지원하며 운영진이 승인한 정보만 공개합니다. 아래 문서는 구현 대상의 요약이며 실제 앱은 아직 구성 전입니다.
+
 ## 처음 작업을 맡으면
 
 AI 코딩 도구에서 이 저장소 폴더를 열고 아래 한 문장에 맡은 일만 넣어 보내세요.
@@ -14,6 +16,7 @@ AI 코딩 도구에서 이 저장소 폴더를 열고 아래 한 문장에 맡�
 
 - [팀 Google Drive](https://drive.google.com/drive/folders/161wj4bWoihZ3NlYlhuZxB8xf_3R2SZ_g) — 프로젝트 공유 자료를 찾는 시작 위치입니다.
 - [설계 자료 폴더](https://drive.google.com/drive/folders/1dQFtCVjYneL9wQ7B_lJL9zVF24d1OhKj) — PRD와 기능정의서를 확인합니다.
+- [PRD](https://docs.google.com/document/d/1mKtalKrWTfE0ME1OB4wfT6ntDxUADFulkBatFlnQEnU/edit) · [기능정의서](https://docs.google.com/spreadsheets/d/1gz_mPcyv0wkcNCSgEGfBRO6cN5kmBx0osrvvxVq84Rk/edit) — 작업 전 최신 원문을 확인합니다.
 - [Figma 와이어프레임](https://www.figma.com/design/TWl3V8WqKMYTOxBvd6qusY/%EB%A7%90%EB%B9%9B-%EC%99%80%EC%9D%B4%EC%96%B4%ED%94%84%EB%A0%88%EC%9E%84?node-id=0-1) — 화면 작업 시 관련 화면과 흐름을 확인합니다.
 
 자료를 읽으려면 각 서비스의 접근 권한과 AI 도구의 연결이 필요할 수 있습니다. 와이어프레임에 표시된 모든 화면이 이번 작업 범위에 포함되는 것은 아닙니다.
@@ -21,6 +24,7 @@ AI 코딩 도구에서 이 저장소 폴더를 열고 아래 한 문장에 맡�
 ## 팀 문서
 
 - [서비스 범위](docs/requirements.md)
+- [기능 목록과 우선순위](docs/features.md)
 - [식재료·필터·제보 정책](docs/data-policy.md)
 - [작업 목록](docs/tasks.md)
 - [검증 기준](docs/checklist.md)
@@ -32,4 +36,16 @@ AI 코딩 도구에서 이 저장소 폴더를 열고 아래 한 문장에 맡�
 
 ## 개발 환경
 
-기획상 프론트엔드는 React와 JavaScript, 지도는 NAVER Maps API, 백엔드는 Supabase, 배포는 Vercel을 사용합니다. 현재 브랜치에는 앱 코드가 없습니다. 개발 환경이 정해지면 실제 설치·실행 명령, 필요한 환경변수 이름, 화면 확인 방법을 여기에 추가합니다.
+PRD를 기준으로 다음 기술을 사용해 반응형 웹앱을 개발합니다.
+
+| 구분 | 기술과 용도 |
+| --- | --- |
+| 서비스 형태 | 모바일과 PC 브라우저에서 사용하는 반응형 웹앱 |
+| 프론트엔드 | React · JavaScript |
+| 지도 | NAVER Maps API |
+| 백엔드 | Supabase — 데이터베이스, 구글 로그인, 사진 저장 |
+| 배포 | Vercel |
+
+## 설치·실행 상태
+
+현재 이 브랜치에는 앱 코드와 패키지·실행 설정이 아직 없습니다. 위 기술 선택을 바탕으로 프로젝트를 구성한 뒤, 직접 확인한 설치·실행·검사 명령과 필요한 환경변수 이름, 화면 확인 방법을 여기에 기록합니다.
