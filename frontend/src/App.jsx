@@ -1,4 +1,4 @@
-import { preferences, sessionPreferences } from "./storage";
+import { preferences } from "./storage";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
@@ -26,21 +26,12 @@ import {
 } from "lucide-react";
 import CampusMap from "./CampusMap";
 import { explore, tags, name, tagList } from "./domain";
-import {
-  remote,
-  callbackError,
-  localAccount,
-  fromSession,
-  signIn,
-  signOut,
-  readDb,
-  naverKey,
-} from "./store";
-import { Context, useApp, Chip, Dialog, Photo } from "./common";
+import { remote, fromSession, signOut, readDb, naverKey } from "./store";
+import { Context, useApp, Chip, Photo } from "./common";
 import { Detail, ReportForm, Reports } from "./screens";
 import "./style.css";
 const rootRoute = { page: "home" };
-const loginReturnKey = "itda.return";
+import AccountScreen from "./AccountScreen";
 function routeFromHash() {
   try {
     return Object.fromEntries(new URLSearchParams(location.hash.slice(1)));
@@ -67,20 +58,15 @@ function App() {
     idx = lang === "ko" ? 0 : 1,
     t = (ko, en) => (idx ? en : ko);
   const [route, setRoute] = useState(routeFromHash),
-    [user, setUser] = useState(() => (remote ? null : localAccount())),
+    [user, setUser] = useState(null),
     [ready, setReady] = useState(!remote),
     [db, setDb] = useState(null),
     [error, setError] = useState(false),
-    [login, setLogin] = useState(false),
-    [signingIn, setSigningIn] = useState(false),
-    [authError, setAuthError] = useState(false),
     [notice, setNotice] = useState(""),
     [selected, setSelected] = useState([]),
     [userLocation, setLocation] = useState(null);
   const seq = useRef(0),
-    timer = useRef(null),
-    afterLogin = useRef(null),
-    loginReturnHandled = useRef(false);
+    timer = useRef(null);
   const go = useCallback((r, replace = false) => {
     const hash = new URLSearchParams(r).toString();
     try {
@@ -126,7 +112,6 @@ function App() {
   }, []);
   useEffect(() => {
     if (!remote) {
-      setUser(localAccount());
       return;
     }
     const { data } = remote.auth.onAuthStateChange((_, s) => {
@@ -139,42 +124,11 @@ function App() {
     if (!ready) return;
     refresh();
     const sync = (e) => {
-      if (e.key === "itda.preview.account.v1") setUser(localAccount());
       refresh();
     };
     window.addEventListener("storage", sync);
     return () => window.removeEventListener("storage", sync);
   }, [user?.id, ready, refresh]);
-  useEffect(() => {
-    if (!remote || !ready || loginReturnHandled.current) return;
-    loginReturnHandled.current = true;
-    const pending = sessionPreferences.getItem(loginReturnKey);
-    if (!pending) return;
-    sessionPreferences.removeItem(loginReturnKey);
-    let attempt;
-    try {
-      attempt = JSON.parse(pending);
-    } catch {
-      return;
-    }
-    if (!attempt || typeof attempt !== "object") return;
-    if (user && !callbackError) {
-      go(attempt.target || rootRoute, true);
-      return;
-    }
-    afterLogin.current = attempt.target;
-    if (callbackError) {
-      const url = new URL(location.href);
-      for (const key of ["error", "error_code", "error_description"]) {
-        url.searchParams.delete(key);
-      }
-      url.hash = "";
-      history.replaceState(history.state, "", url);
-    }
-    go(attempt.origin || rootRoute, true);
-    setAuthError(true);
-    setLogin(true);
-  }, [ready, user, go]);
   useEffect(() => {
     if (ready && route.page === "admin" && !user?.admin) go(rootRoute, true);
   }, [route.page, user?.admin, ready]);
@@ -183,33 +137,20 @@ function App() {
       if (target) go(target);
       return;
     }
-    afterLogin.current = target;
-    setAuthError(false);
-    setLogin(true);
+    if (!["login", "signup"].includes(route.page))
+      go({ page: "login", next: JSON.stringify(target || route || rootRoute) });
   };
-  async function enter(role) {
-    if (signingIn) return;
-    setAuthError(false);
-    setSigningIn(true);
+  function finishLogin(account) {
+    let next = rootRoute;
     try {
-      if (remote)
-        sessionPreferences.setItem(
-          loginReturnKey,
-          JSON.stringify({ target: afterLogin.current || route, origin: route }),
-        );
-      const u = await signIn(role);
-      if (!remote) {
-        setSigningIn(false);
-        setUser(u);
-        setLogin(false);
-        if (afterLogin.current) go(afterLogin.current);
-        afterLogin.current = null;
-      }
-    } catch {
-      setSigningIn(false);
-      setAuthError(true);
-      sessionPreferences.removeItem(loginReturnKey);
-    }
+      const requested = JSON.parse(route.next || "{}");
+      if (
+        ["home", "my", "restaurant", "menu", "form"].includes(requested?.page)
+      )
+        next = requested;
+    } catch {}
+    setUser(account);
+    go(next, true);
   }
   async function logout() {
     try {
@@ -361,7 +302,16 @@ function App() {
           <button onClick={refresh}>{t("다시 시도", "Retry")}</button>
         </div>
       )}
-      {!db && !error ? (
+      {["login", "signup"].includes(page) ? (
+        <AccountScreen
+          key={page}
+          signup={page === "signup"}
+          onSwitch={(signup) =>
+            go({ ...route, page: signup ? "signup" : "login" }, true)
+          }
+          onSuccess={finishLogin}
+        />
+      ) : !db && !error ? (
         <main className="main">{t("불러오는 중…", "Loading…")}</main>
       ) : (
         db && (
@@ -433,67 +383,6 @@ function App() {
             <X size={15} />
           </button>
         </div>
-      )}
-      {login && (
-        <Dialog
-          title={t("로그인", "Sign in")}
-          onClose={() => {
-            if (signingIn) return;
-            setLogin(false);
-            afterLogin.current = null;
-          }}
-        >
-          <div className="dialogBody">
-            <Brand />
-            <h2>{t("잇다에 로그인", "Sign in to Itda")}</h2>
-            <p>
-              {t(
-                "확인한 메뉴 정보를 제보하고 검토 결과를 볼 수 있어요.",
-                "Share verified menu details and follow your reports.",
-              )}
-            </p>
-            {remote ? (
-              <button
-                className="primary full"
-                disabled={signingIn}
-                onClick={() => enter()}
-              >
-                {signingIn
-                  ? t("Google 로그인으로 이동 중…", "Opening Google sign-in…")
-                  : t("Google 계정으로 로그인", "Continue with Google")}
-              </button>
-            ) : (
-              <>
-                <div className="noticebox">
-                  {t(
-                    "로컬 체험 계정입니다. 제보와 검토 결과는 이 브라우저에 저장됩니다.",
-                    "Preview accounts store reports and reviews in this browser.",
-                  )}
-                </div>
-                <button
-                  className="primary full"
-                  onClick={() => enter("student")}
-                >
-                  {t("학생으로 체험하기", "Continue as a student")}
-                </button>
-                <button
-                  className="secondary full"
-                  onClick={() => enter("admin")}
-                >
-                  {t("운영진으로 체험하기", "Continue as a reviewer")}
-                </button>
-              </>
-            )}
-            {authError && (
-              <p role="alert">
-                {t(
-                  "로그인에 실패했습니다. 다시 시도해주세요.",
-                  "Sign-in failed. Please try again.",
-                )}
-              </p>
-            )}
-          </div>
-        </Dialog>
       )}
     </Context.Provider>
   );

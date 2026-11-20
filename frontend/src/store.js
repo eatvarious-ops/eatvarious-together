@@ -4,51 +4,54 @@ import { restaurants, menus } from "./seed";
 import { applyReport, exception, norm, distance } from "./domain";
 const config = window.ITDA_CONFIG || {};
 export const naverKey = config.naverKey || "";
-// Capture callback errors before Supabase can consume the OAuth parameters.
-export const callbackError =
-  new URLSearchParams(window.location.search).has("error") ||
-  new URLSearchParams(window.location.hash.slice(1)).has("error");
 export const remote =
   config.supabaseUrl && config.supabaseAnonKey
     ? createClient(config.supabaseUrl, config.supabaseAnonKey)
     : null;
-const key = "itda.preview.catalog.v1",
-  accountKey = "itda.preview.account.v1";
-const localAccounts = {
-  student: { id: "preview-student", name: "Campus Student", admin: false },
-  admin: { id: "preview-reviewer", name: "Itda Team", admin: true },
-};
-export const localAccount = () =>
-  localAccounts[preferences.getItem(accountKey)] || null;
+const key = "itda.preview.catalog.v1";
 export function fromSession(s) {
   const u = s?.user;
   return u
     ? {
         id: u.id,
-        name: u.user_metadata?.full_name || u.user_metadata?.name || u.email,
+        name:
+          u.user_metadata?.username ||
+          u.user_metadata?.full_name ||
+          u.email?.split("@")[0],
         email: u.email,
         admin: u.app_metadata?.role === "admin",
       }
     : null;
 }
-export async function signIn(role) {
-  if (!remote) {
-    preferences.setItem(accountKey, role);
-    return localAccount();
-  }
-  const { error } = await remote.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo: new URL(window.location.pathname, window.location.origin).href,
-    },
+export async function registerStudent(username, password) {
+  if (!remote) throw new Error("network");
+  const { error } = await remote.functions.invoke("itda-student-signup", {
+    body: { username, password },
   });
-  if (error) throw error;
+  if (error) {
+    const data = await error.context?.json?.().catch(() => null);
+    throw new Error(data?.code || "network");
+  }
+}
+export async function signIn(username, password) {
+  if (!remote) throw new Error("network");
+  const { data, error } = await remote.auth.signInWithPassword({
+    email: username + "@accounts.itda.invalid",
+    password,
+  });
+  if (error) {
+    if (error.status === 429) throw new Error("rate_limit");
+    throw new Error(
+      error.code === "invalid_credentials" || error.status === 400
+        ? "credentials"
+        : "network",
+    );
+  }
+  return fromSession(data.session);
 }
 export async function signOut() {
-  if (remote) {
-    const { error } = await remote.auth.signOut({ scope: "local" });
-    if (error) throw error;
-  } else preferences.removeItem(accountKey);
+  const { error } = await remote.auth.signOut({ scope: "local" });
+  if (error) throw error;
 }
 function initial() {
   return {
