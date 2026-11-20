@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 const env = {
   SUPABASE_URL: "https://project.example", SUPABASE_ANON_KEY: "anon",
   NAVER_SEARCH_CLIENT_ID: "naver-id", NAVER_SEARCH_CLIENT_SECRET: "naver-secret",
-  ANTHROPIC_API_KEY: "model-key",
+  OPENAI_API_KEY: "model-key",
 };
 const handlers = [];
 globalThis.Deno = { env: { get: (k) => env[k] }, serve: (fn) => handlers.push(fn) };
@@ -25,9 +25,14 @@ globalThis.fetch = async (url, options = {}) => {
     lastNaver = { url: u, headers: options.headers };
     return Response.json({ items: naverItems });
   }
-  if (u.host === "api.anthropic.com") {
-    lastModel = JSON.parse(options.body);
-    return Response.json({ content: [{ type: "tool_use", name: "report_menu", input: modelInput }] });
+  if (u.host === "api.openai.com") {
+    lastModel = { url: u, headers: options.headers, body: JSON.parse(options.body) };
+    if (modelInput === "refusal")
+      return Response.json({ output: [{ type: "message", content: [{ type: "refusal", refusal: "no" }] }] });
+    return Response.json({ output: [
+      { type: "reasoning", summary: [] },
+      { type: "message", content: [{ type: "output_text", text: JSON.stringify(modelInput) }] },
+    ] });
   }
   throw new Error("unexpected fetch " + url);
 };
@@ -90,9 +95,17 @@ assert.equal(res.status, 200);
 assert.equal(out.code, "ok");
 assert.deepEqual(out.menus, [{ ko: "제육 덮밥", en: "Spicy Pork Rice" }, { ko: "치즈 라면", en: "" }]);
 assert.deepEqual(out.marks, [{ ingredient: "pork", menus: ["제육 덮밥"], text: "돼지고기: 국내산" }]);
-assert.equal(lastModel.tool_choice.name, "report_menu");
-assert.equal(lastModel.messages[0].content.filter((c) => c.type === "image").length, 2);
-assert.match(lastModel.messages[0].content.at(-1).text, /추측하지 않는다/);
+assert.equal(lastModel.url.pathname, "/v1/responses");
+assert.equal(lastModel.headers.Authorization, "Bearer model-key");
+assert.equal(lastModel.body.text.format.type, "json_schema");
+assert.equal(lastModel.body.text.format.strict, true);
+const parts = lastModel.body.input[0].content;
+assert.equal(parts.filter((c) => c.type === "input_image").length, 2);
+assert.match(parts[0].image_url, /^data:image\/jpeg;base64,/);
+assert.match(parts.at(-1).text, /추측하지 않는다/);
+modelInput = "refusal";
+assert.equal((await call(menuExtract, "admin-token", { images: [img] })).status, 502);
+assert.equal(menu.outputJson({}), null);
 modelInput = { menus: [], marks: [] };
 assert.equal((await (await call(menuExtract, "admin-token", { images: [img] })).json()).code, "no_menus");
 assert.deepEqual(menu.sanitize(null), { menus: [], marks: [] });

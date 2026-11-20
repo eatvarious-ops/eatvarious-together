@@ -19,8 +19,8 @@ Supabase 개발 프로젝트에서는 `setup.sql`을 사용한다. 앱은 아이
 | 함수 | 입력 → 출력 | 필요한 비밀값 |
 | --- | --- | --- |
 | `itda-place-search` | `{query}` → 학내 범위 안의 후보 `{ko,address,phone,category,lat,lng}` 최대 5개와 제외된 개수. 검색어에 '서울대'가 없으면 앞에 붙인다. | `NAVER_SEARCH_CLIENT_ID`, `NAVER_SEARCH_CLIENT_SECRET` (NAVER Cloud API HUB 지역 검색). 다른 주소를 쓰려면 `NAVER_SEARCH_ENDPOINT` |
-| `itda-menu-extract` | `{images:[{mediaType,data(base64)}]}` 최대 5장·장당 5MB → 사진에 인쇄된 메뉴명 `{ko,en}`과 원산지·알레르기 표시 `{ingredient,menus,text}` | `ANTHROPIC_API_KEY`. 모델은 `ITDA_MENU_MODEL`로 바꿀 수 있다 |
+| `itda-menu-extract` | `{images:[{mediaType,data(base64)}]}` 최대 5장·장당 5MB → 사진에 인쇄된 메뉴명 `{ko,en}`과 원산지·알레르기 표시 `{ingredient,menus,text}` | `OPENAI_API_KEY` (OpenAI Responses API, 이미지 입력과 Structured Outputs). 모델은 기본 `gpt-5.4`이고 `ITDA_MENU_MODEL`로 바꿀 수 있다 |
 
 메뉴 추출은 인쇄된 글자만 읽고, 메뉴명이나 음식 사진으로 식재료를 추측하지 않도록 지시한다. 표시 결과는 운영진 화면에서 '포함' 제안으로만 쓰며 저장 전에 운영진이 확인한다.
 
-배포: 비밀값을 `supabase secrets set NAVER_SEARCH_CLIENT_ID=… NAVER_SEARCH_CLIENT_SECRET=… ANTHROPIC_API_KEY=… --project-ref <프로젝트-ref>`로 넣고 `supabase functions deploy itda-place-search` 와 `supabase functions deploy itda-menu-extract`를 실행한다. 비밀값이 없으면 각각 `search_not_configured`, `extract_not_configured`를 돌려준다. `npm test`의 `tests/admin-intake.mjs`는 외부 API를 흉내 낸 응답으로 권한·학내 필터·좌표 변환·출력 정리를 검사한다.
+배포: 비밀값을 `supabase secrets set NAVER_SEARCH_CLIENT_ID=… NAVER_SEARCH_CLIENT_SECRET=… OPENAI_API_KEY=… --project-ref <프로젝트-ref>`로 넣고 `supabase functions deploy itda-place-search` 와 `supabase functions deploy itda-menu-extract`를 실행한다. 비밀값이 없으면 각각 `search_not_configured`, `extract_not_configured`를 돌려준다. `npm test`의 `tests/admin-intake.mjs`는 외부 API를 흉내 낸 응답으로 권한·학내 필터·좌표 변환·출력 정리를 검사한다.
