@@ -14,108 +14,28 @@
 .itda-map * {
   box-sizing: border-box;
 }
-.itda-map .itda-map-surface,
 .itda-native-map,
-.itda-map-art,
 .itda-map-status {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
 }
-.itda-map-surface {
-  overflow: hidden;
-  cursor: grab;
-  touch-action: pan-y;
-  user-select: none;
-}
-.itda-map-surface:active {
-  cursor: grabbing;
-}
-.itda-map-surface.is-picker {
-  cursor: crosshair;
-}
-.itda-map-art {
-  pointer-events: none;
-}
-.itda-map-label {
-  pointer-events: none;
-  position: absolute;
-  transform: translate(-50%, -50%);
-  white-space: nowrap;
-  font-size: 0.73rem;
-  font-weight: 600;
-  color: #65806c;
-  letter-spacing: 0.015em;
-  text-shadow:
-    0 1px 2px #f2f4e9,
-    1px 0 2px #f2f4e9,
-    -1px 0 2px #f2f4e9;
-}
-.itda-map .itda-map-pin {
-  position: absolute;
-  flex-direction: column;
-  align-items: center;
-  display: flex;
-  transform: translate(-50%, -100%);
-  width: 42px;
-  height: 40px;
-  padding: 0;
-  margin: 0;
-  border: 0;
-  border-radius: 10px;
-  background: transparent;
-  box-shadow: none;
-  cursor: pointer;
-  justify-content: flex-end;
-  touch-action: manipulation;
-  z-index: 2;
-  color: #243e32;
-}
-.itda-map .itda-map-pin:hover,
-.itda-map .itda-map-pin:focus-visible {
-  z-index: 4;
-  background: transparent;
-}
 .itda-map .itda-map-pin:focus-visible,
 .itda-map button:focus-visible {
   outline: 3px solid #176e61;
   outline-offset: 2px;
 }
-.itda-pin-icon,
 .itda-native-pin {
   width: 30px;
   height: 36px;
   display: block;
   filter: drop-shadow(0 2px 2px #29483948);
 }
-.itda-pin-icon svg,
 .itda-native-pin svg {
   width: 100%;
   height: 100%;
   display: block;
-}
-.itda-pin-label {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translate(-50%, -1px);
-  border-radius: 6px;
-  background: #fffffff4;
-  border: 1px solid #c3d1c5;
-  color: #244534;
-  padding: 0.16rem 0.43rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  line-height: 1.28;
-  white-space: nowrap;
-  box-shadow: 0 2px 3px #23472b19;
-  pointer-events: none;
-}
-.itda-map-pin:hover .itda-pin-label,
-.itda-map-pin:focus-visible .itda-pin-label {
-  background: #fff;
-  border-color: #698a74;
 }
 .itda-map-caption,
 .itda-north,
@@ -212,7 +132,6 @@
   border-radius: 4px;
   padding: 1px 5px;
   background: #f7fbf4cf;
-  pointer-events: none;
 }
 .itda-map-status {
   display: flex;
@@ -276,44 +195,34 @@
     right: 9px;
     bottom: 12px;
   }
-  .itda-pin-icon {
-    width: 26px;
-    height: 32px;
-  }
-  .itda-pin-label {
-    font-size: 0.7rem;
-    padding: 2px 4px;
-  }
-  .itda-map-label {
-    font-size: 0.61rem;
-  }
 }
-.itda-map-surface:focus-visible {
-  outline: 3px solid #387a60;
-  outline-offset: -3px;
+.itda-osm {
+  position: absolute;
+  inset: 0;
+  background: #e9ede4;
+  z-index: 0;
 }
-.itda-map-pin.label-right .itda-pin-label {
-  left: calc(50% + 14px);
-  top: auto;
-  bottom: 5px;
-  transform: none;
+.itda-osm .itda-map-pin {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
 }
-.itda-map-pin.label-left .itda-pin-label {
-  left: auto;
-  right: calc(50% + 14px);
-  top: auto;
-  bottom: 5px;
-  transform: none;
+.itda-osm .itda-map-pin svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 1px 2px #445c4277);
 }
-.itda-map-pin.label-top .itda-pin-label {
-  top: auto;
-  bottom: 35px;
-  transform: translateX(-50%);
+.itda-map-source {
+  pointer-events: auto;
+  font-size: 0.75rem;
+  background: #fffffff0;
 }
-.itda-map-pin.label-quiet .itda-pin-label {
-  visibility: hidden;
+.itda-map-source a {
+  color: #264e3b;
+  text-decoration: underline;
 }
-.itda-map-pin.label-quiet:hover .itda-pin-label,
-.itda-map-pin.label-quiet:focus-visible .itda-pin-label {
-  visibility: visible;
+.itda-osm .itda-picked {
+  background: #285e44;
+  border: 3px solid #fff;
 }
