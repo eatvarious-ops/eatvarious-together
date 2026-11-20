@@ -8,7 +8,7 @@ const bundle = await build({
   write: false,
   outdir: "dist",
   format: "iife",
-  loader: { ".jpg": "dataurl" },
+  loader: { ".jpg": "dataurl", ".svg": "dataurl", ".png": "dataurl" },
   define: { "process.env.NODE_ENV": '"production"' },
   legalComments: "inline",
 });
@@ -18,7 +18,7 @@ const js = bundle.outputFiles.find((f) => f.path.endsWith(".js")).text;
 const config = {
   naverKey: process.env.ITDA_NAVER_CLIENT_ID || "",
   supabaseUrl: process.env.ITDA_SUPABASE_URL || "",
-  supabaseAnonKey: process.env.ITDA_SUPABASE_PUBLIC_KEY || ""
+  supabaseAnonKey: process.env.ITDA_SUPABASE_PUBLIC_KEY || "",
 };
 if (Boolean(config.supabaseUrl) !== Boolean(config.supabaseAnonKey)) {
   throw new Error("Set both ITDA_SUPABASE_URL and ITDA_SUPABASE_PUBLIC_KEY.");
