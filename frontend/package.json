@@ -6,7 +6,7 @@
   "scripts": {
     "build": "node build.mjs",
     "start": "node serve.mjs",
-    "test": "npm run build && node tests/ui.mjs && node tests/map.mjs"
+    "test": "node build.mjs --no-naver && node tests/ui.mjs && node tests/map.mjs && npm run build"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.0",
