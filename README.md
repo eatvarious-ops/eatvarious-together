@@ -17,6 +17,8 @@ AI 코딩 도구에서 이 저장소 폴더를 열고 아래 한 문장에 맡�
 - [식재료·필터·제보 정책](docs/data-policy.md)
 - [작업 목록](docs/tasks.md)
 - [검증 기준](docs/checklist.md)
+- [개발 범위와 품질 규칙](docs/development.md)
+- [실수와 재발 방지 기록](docs/mistakes.md)
 - [첫 작업 안내](docs/first-task.md)
 - [작업 카드 양식](docs/task-card-template.md)
 - [기여 방법](AGENTS.md)
