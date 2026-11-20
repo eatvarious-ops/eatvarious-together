@@ -10,6 +10,9 @@
 | 내 제보·검토함 | reports 조회 | 사용자에게 본인 기록, 운영진에게 전체 기록. 익명은 빈 목록 |
 | 승인·반려 | review_report(p_id, p_approve, p_keys, p_reason) | 승인된 실제 항목을 approved_keys에 보존. approved, rejected 또는 failed. 이미 처리한 제보와 운영진 외 요청은 거부 |
 | 사진 | 비공개 evidence 버킷에 사용자 UUID로 시작하는 경로로 업로드 | 소유자·운영진 접근. 공개된 식당·메뉴에서 참조하는 사진만 다른 사용자가 읽을 수 있음 |
+| 운영진 일괄 등록 | 운영진이 reports에 제출한 뒤 같은 id로 review_report(승인) 호출 | 일반 제보와 같은 검증·기록. 승인 실패는 failed로 남아 재시도 가능 |
+| 식당 후보 검색 | functions.invoke('itda-place-search', {query}) | 운영진만. 200 {candidates:[{ko,address,phone,category,lat,lng}], excluded}. 401/403 권한, 400 검색어, 502 search_failed, 503 search_not_configured |
+| 메뉴판 사진 추출 | functions.invoke('itda-menu-extract', {images:[{mediaType,data}]}) | 운영진만. 200 {code:ok/no_menus, menus:[{ko,en}], marks:[{ingredient,menus,text}]}. 400 invalid_images, 502 extract_failed, 503 extract_not_configured |
 
 메뉴 data.ingredients의 키는 pork, beef, chicken, other, seafood, egg, dairy다. 값은 yes, no, unknown이다. data.evidence는 항목별 확인 방법(staff, label, self)과 날짜를 보관한다. 선택한 태그는 같은 메뉴에서 모두 충족해야 한다.
 

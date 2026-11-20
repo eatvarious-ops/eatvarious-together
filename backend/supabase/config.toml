@@ -2,3 +2,11 @@ project_id = "eatvarious-together"
 
 [functions.itda-student-signup]
 verify_jwt = false
+
+# Reviewer-only functions check the caller's token and admin role themselves,
+# so browser CORS preflights reach the handler.
+[functions.itda-place-search]
+verify_jwt = false
+
+[functions.itda-menu-extract]
+verify_jwt = false

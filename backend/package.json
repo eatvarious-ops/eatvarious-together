@@ -6,7 +6,7 @@
     "node": ">=24"
   },
   "scripts": {
-    "test": "node tests/review.mjs && node tests/signup.mjs"
+    "test": "node tests/review.mjs && node tests/signup.mjs && node tests/admin-intake.mjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.17"
