@@ -1,0 +1,25 @@
+{
+  "name": "itda-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "start": "node serve.mjs",
+    "test": "npm run build && node tests/ui.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "lucide-react": "^0.468.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "@testing-library/dom": "^10.4.2",
+    "jsdom": "^31.0.1"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
