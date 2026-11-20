@@ -28,6 +28,7 @@ import CampusMap from "./CampusMap";
 import { explore, tags, name, tagList } from "./domain";
 import {
   remote,
+  callbackError,
   localAccount,
   fromSession,
   signIn,
@@ -39,6 +40,7 @@ import { Context, useApp, Chip, Dialog, Photo } from "./common";
 import { Detail, ReportForm, Reports } from "./screens";
 import "./style.css";
 const rootRoute = { page: "home" };
+const loginReturnKey = "itda.return";
 function routeFromHash() {
   try {
     return Object.fromEntries(new URLSearchParams(location.hash.slice(1)));
@@ -70,13 +72,15 @@ function App() {
     [db, setDb] = useState(null),
     [error, setError] = useState(false),
     [login, setLogin] = useState(false),
+    [signingIn, setSigningIn] = useState(false),
     [authError, setAuthError] = useState(false),
     [notice, setNotice] = useState(""),
     [selected, setSelected] = useState([]),
     [userLocation, setLocation] = useState(null);
   const seq = useRef(0),
     timer = useRef(null),
-    afterLogin = useRef(null);
+    afterLogin = useRef(null),
+    loginReturnHandled = useRef(false);
   const go = useCallback((r, replace = false) => {
     const hash = new URLSearchParams(r).toString();
     try {
@@ -142,14 +146,35 @@ function App() {
     return () => window.removeEventListener("storage", sync);
   }, [user?.id, ready, refresh]);
   useEffect(() => {
-    if (user && sessionPreferences.getItem("itda.return")) {
-      try {
-        go(JSON.parse(sessionPreferences.getItem("itda.return")), true);
-      } finally {
-        sessionPreferences.removeItem("itda.return");
-      }
+    if (!remote || !ready || loginReturnHandled.current) return;
+    loginReturnHandled.current = true;
+    const pending = sessionPreferences.getItem(loginReturnKey);
+    if (!pending) return;
+    sessionPreferences.removeItem(loginReturnKey);
+    let attempt;
+    try {
+      attempt = JSON.parse(pending);
+    } catch {
+      return;
     }
-  }, [user?.id]);
+    if (!attempt || typeof attempt !== "object") return;
+    if (user && !callbackError) {
+      go(attempt.target || rootRoute, true);
+      return;
+    }
+    afterLogin.current = attempt.target;
+    if (callbackError) {
+      const url = new URL(location.href);
+      for (const key of ["error", "error_code", "error_description"]) {
+        url.searchParams.delete(key);
+      }
+      url.hash = "";
+      history.replaceState(history.state, "", url);
+    }
+    go(attempt.origin || rootRoute, true);
+    setAuthError(true);
+    setLogin(true);
+  }, [ready, user, go]);
   useEffect(() => {
     if (ready && route.page === "admin" && !user?.admin) go(rootRoute, true);
   }, [route.page, user?.admin, ready]);
@@ -163,31 +188,41 @@ function App() {
     setLogin(true);
   };
   async function enter(role) {
+    if (signingIn) return;
+    setAuthError(false);
+    setSigningIn(true);
     try {
       if (remote)
         sessionPreferences.setItem(
-          "itda.return",
-          JSON.stringify(afterLogin.current || rootRoute),
+          loginReturnKey,
+          JSON.stringify({ target: afterLogin.current || route, origin: route }),
         );
       const u = await signIn(role);
       if (!remote) {
+        setSigningIn(false);
         setUser(u);
         setLogin(false);
         if (afterLogin.current) go(afterLogin.current);
         afterLogin.current = null;
       }
     } catch {
+      setSigningIn(false);
       setAuthError(true);
-      sessionPreferences.removeItem("itda.return");
+      sessionPreferences.removeItem(loginReturnKey);
     }
   }
   async function logout() {
     try {
       await signOut();
-    } finally {
       setUser(null);
       go(rootRoute);
-      refresh();
+    } catch {
+      toast(
+        t(
+          "로그아웃에 실패했습니다. 다시 시도해 주세요.",
+          "Sign-out failed. Please try again.",
+        ),
+      );
     }
   }
   const locate = () => {
@@ -403,6 +438,7 @@ function App() {
         <Dialog
           title={t("로그인", "Sign in")}
           onClose={() => {
+            if (signingIn) return;
             setLogin(false);
             afterLogin.current = null;
           }}
@@ -417,8 +453,14 @@ function App() {
               )}
             </p>
             {remote ? (
-              <button className="primary full" onClick={() => enter()}>
-                {t("Google 계정으로 로그인", "Continue with Google")}
+              <button
+                className="primary full"
+                disabled={signingIn}
+                onClick={() => enter()}
+              >
+                {signingIn
+                  ? t("Google 로그인으로 이동 중…", "Opening Google sign-in…")
+                  : t("Google 계정으로 로그인", "Continue with Google")}
               </button>
             ) : (
               <>

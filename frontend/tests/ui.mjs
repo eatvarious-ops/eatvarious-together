@@ -22,3 +22,39 @@ await click(btn('식당 찾기'));fireEvent.change(ui.getByLabelText('검색 대
 await click(btn('Switch to English'));assert.equal(w.localStorage.getItem('itda.lang'),'en');assert.ok(ui.getByRole('heading',{name:'Campus food finder.'}));assert.deepEqual(errors,[]);
 console.log('PASS: 6 restaurants, 14 menus, multi-filter same-menu rule, map/list synchronized, authenticated form continuity, method validation, pending isolation, approval publication, menu search, language preference, no DOM execution errors');
 w.close();
+
+const connectedHtml = fs.readFileSync(new URL('../dist/index.html', import.meta.url), 'utf8')
+  .replace(/window\.ITDA_CONFIG=[^<]+/, 'window.ITDA_CONFIG={"supabaseUrl":"https://itda-test.supabase.co","supabaseAnonKey":"test-key"}');
+const callback = new JSDOM(connectedHtml, {
+  url: 'http://localhost/?error=access_denied&error_description=cancelled',
+  runScripts: 'dangerously',
+  pretendToBeVisual: true,
+  virtualConsole: vc,
+  beforeParse(window) {
+    Object.assign(window, {
+      structuredClone, TextDecoder, TextEncoder, Response, Request, Headers, WebSocket,
+      ResizeObserver: class { observe() {} disconnect() {} },
+      scrollTo: () => {},
+      fetch: async () => Response.json([]),
+    });
+    window.localStorage.setItem('itda.lang', 'ko');
+    window.sessionStorage.setItem('itda.return', JSON.stringify({
+      origin: { page: 'restaurant', id: 'example' },
+      target: { page: 'form', type: 'add', rid: 'example' },
+    }));
+  },
+});
+try {
+  const callbackWindow = callback.window;
+  const callbackUi = within(callbackWindow.document.body);
+  await wait(() => callbackUi.queryByRole('alert'));
+  assert.match(callbackUi.getByRole('alert').textContent, /로그인에 실패/);
+  assert.equal(callbackUi.getByRole('button', { name: 'Google 계정으로 로그인' }).disabled, false);
+  assert.equal(callbackWindow.location.search, '');
+  assert.equal(callbackWindow.location.hash, '#page=restaurant&id=example');
+  assert.equal(callbackWindow.sessionStorage.getItem('itda.return'), null);
+  assert.deepEqual(errors, []);
+  console.log('PASS: cancelled Google sign-in restores the previous route and offers retry');
+} finally {
+  callback.window.close();
+}

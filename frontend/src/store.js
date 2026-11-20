@@ -4,6 +4,10 @@ import { restaurants, menus } from "./seed";
 import { applyReport, exception, norm, distance } from "./domain";
 const config = window.ITDA_CONFIG || {};
 export const naverKey = config.naverKey || "";
+// Capture callback errors before Supabase can consume the OAuth parameters.
+export const callbackError =
+  new URLSearchParams(window.location.search).has("error") ||
+  new URLSearchParams(window.location.hash.slice(1)).has("error");
 export const remote =
   config.supabaseUrl && config.supabaseAnonKey
     ? createClient(config.supabaseUrl, config.supabaseAnonKey)
@@ -21,9 +25,9 @@ export function fromSession(s) {
   return u
     ? {
         id: u.id,
-        name: u.user_metadata.full_name || u.email,
+        name: u.user_metadata?.full_name || u.user_metadata?.name || u.email,
         email: u.email,
-        admin: u.app_metadata.role === "admin",
+        admin: u.app_metadata?.role === "admin",
       }
     : null;
 }
@@ -34,14 +38,16 @@ export async function signIn(role) {
   }
   const { error } = await remote.auth.signInWithOAuth({
     provider: "google",
-    options: { redirectTo: window.location.href.split("#")[0] },
+    options: {
+      redirectTo: new URL(window.location.pathname, window.location.origin).href,
+    },
   });
   if (error) throw error;
 }
 export async function signOut() {
   if (remote) {
-    const { error } = await remote.auth.signOut();
-    if (error) await remote.auth.signOut({ scope: "local" });
+    const { error } = await remote.auth.signOut({ scope: "local" });
+    if (error) throw error;
   } else preferences.removeItem(accountKey);
 }
 function initial() {
