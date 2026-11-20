@@ -46,8 +46,21 @@ AI가 작업 번호와 이름, 확인할 동작, 정상·대표 예외 조건, �
 - 비로그인 식당 조회와 제보 시작 시 로그인 안내를 확인한다.
 - 개발 Supabase에서 최초 Google 로그인, 제보 양식 복귀, 새로고침 후 세션 유지, 로그아웃과 일반 회원의 운영진 접근 제한을 확인한다.
 - Google 로그인 취소·오류 뒤 원래 화면에서 재시도할 수 있는지 확인한다.
+
+## 6 · 실제 캠퍼스 지도 연결
+
+- 키 없는 HTTP 실행에서 관악캠퍼스 온라인 타일과 출처 표시를 확인한다. 파일 실행과 타일 요청 실패 때 저장된 실제 지도가 표시되어야 한다.
+- 모바일·PC에서 확대, 검색·필터 후 핀 개수, 식당 상세 진입, 새 식당 좌표 지정을 확인한다.
+- NAVER 공개 Client ID와 허용 웹 주소, 파일 실행의 차이를 문서화하고 실제 인증 검증 여부를 기록한다.
+
 ## 7 · 체험용 잇다.html 미리보기 공유
 
 - preview/잇다.html이 기록한 브랜치·커밋의 `npm run build` 결과(frontend/dist/index.html)와 같다.
 - preview/README.md에 출처 커밋, 포함된 공개 설정(NAVER Client ID), 실행 방법, 체험 모드 한계가 적혀 있다.
 - 비밀값(Client Secret·서비스 키)이 포함되지 않았다.
+
+## 8 · 지도 작업 main 반영과 preview 제거
+
+- main의 frontend에서 `npm test`가 통과하고 기본 빌드(`npm run build`)에 NAVER 공개 Client ID가 포함된다.
+- Google 로그인(작업 6)과 지도(작업 6) 변경이 함께 유지된다.
+- preview/가 삭제되고, 병합 후 Vercel 배포(https://itda-snu.vercel.app)가 main의 frontend 빌드로 NAVER 지도를 표시한다.
