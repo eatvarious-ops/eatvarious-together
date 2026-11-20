@@ -1,0 +1,28 @@
+name: Web app checks
+on: pull_request
+permissions:
+  contents: read
+jobs:
+  test:
+    name: ${{ matrix.area }} checks
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        area: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check area
+        env:
+          AREA: ${{ matrix.area }}
+        run: |
+          if [ ! -d "$AREA" ]; then
+            echo "::notice::The $AREA implementation has not been introduced on this branch."
+            exit 0
+          fi
+          cd "$AREA"
+          npm ci
+          npm test
