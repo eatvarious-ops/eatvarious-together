@@ -241,3 +241,44 @@ export async function review(id, approve, keys, reason, user) {
   });
   if (result) exception(result);
 }
+// Reviewer intake (INP-10~12). The functions only suggest; registration goes
+// through the same validated report and review_report approval as any report.
+async function invokeAdmin(fn, body) {
+  if (!remote) exception("notConfigured");
+  const { data, error } = await remote.functions.invoke(fn, { body });
+  if (error) {
+    const detail = await error.context?.json?.().catch(() => null);
+    throw new Error(detail?.code || "network");
+  }
+  return data;
+}
+export function searchPlaces(query) {
+  return invokeAdmin("itda-place-search", { query });
+}
+// Large phone photos are scaled down so each upload stays well under the limit.
+async function toImage(file) {
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type))
+    exception("invalid_images");
+  const bmp = await createImageBitmap(file),
+    ratio = Math.min(1, 1600 / Math.max(bmp.width, bmp.height)),
+    canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(bmp.width * ratio));
+  canvas.height = Math.max(1, Math.round(bmp.height * ratio));
+  canvas.getContext("2d").drawImage(bmp, 0, 0, canvas.width, canvas.height);
+  bmp.close();
+  return {
+    mediaType: "image/jpeg",
+    data: canvas.toDataURL("image/jpeg", 0.85).split(",")[1],
+  };
+}
+export async function extractMenus(files) {
+  if (!files.length || files.length > 5) exception("invalid_images");
+  if (!remote) exception("notConfigured");
+  const images = await Promise.all(files.map(toImage));
+  return invokeAdmin("itda-menu-extract", { images });
+}
+export async function registerAsAdmin(report, keys, user) {
+  if (!user?.admin) exception("unauthorized");
+  await submitReport(report, user);
+  await review(report.id, true, keys, "", user);
+}

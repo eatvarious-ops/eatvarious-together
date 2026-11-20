@@ -32,6 +32,8 @@ import { Detail, ReportForm, Reports } from "./screens";
 import "./style.css";
 const rootRoute = { page: "home" };
 import AccountScreen from "./AccountScreen";
+import { RestaurantIntake, MenuIntake, IngredientIntake } from "./AdminIntake";
+const intakePages = ["intake-restaurant", "intake-menus", "intake-ingredients"];
 function routeFromHash() {
   try {
     return Object.fromEntries(new URLSearchParams(location.hash.slice(1)));
@@ -130,7 +132,8 @@ function App() {
     return () => window.removeEventListener("storage", sync);
   }, [user?.id, ready, refresh]);
   useEffect(() => {
-    if (ready && route.page === "admin" && !user?.admin) go(rootRoute, true);
+    if (ready && (route.page === "admin" || intakePages.includes(route.page)) && !user?.admin)
+      go(rootRoute, true);
   }, [route.page, user?.admin, ready]);
   const auth = (target) => {
     if (user) {
@@ -335,6 +338,9 @@ function App() {
                 )
               ))}
             {inAccount && <Reports key={page} />}
+            {user?.admin && page === "intake-restaurant" && <RestaurantIntake />}
+            {user?.admin && page === "intake-menus" && <MenuIntake key={route.rid} />}
+            {user?.admin && page === "intake-ingredients" && <IngredientIntake key={route.rid} />}
           </>
         )
       )}
@@ -395,6 +401,7 @@ function Explorer() {
     db,
     go,
     auth,
+    user,
     selected,
     setSelected,
     userLocation,
@@ -447,10 +454,16 @@ function Explorer() {
         </div>
         <button
           className="secondary add"
-          onClick={() => auth({ page: "form", type: "restaurant" })}
+          onClick={() =>
+            user?.admin
+              ? go({ page: "intake-restaurant" })
+              : auth({ page: "form", type: "restaurant" })
+          }
         >
           <Plus size={17} />
-          {t("식당 추가하기", "Add a restaurant")}
+          {user?.admin
+            ? t("식당 검색 등록", "Find and add a restaurant")
+            : t("식당 추가하기", "Add a restaurant")}
         </button>
       </section>
       <section className="tools">

@@ -169,6 +169,32 @@ export const notices = {
     "Could not apply the report. Public data was preserved. You can retry.",
   ],
   unauthorized: ["운영진 권한이 필요합니다.", "Reviewer access is required."],
+  admin_required: ["운영진 권한이 필요합니다.", "Reviewer access is required."],
+  login_required: ["다시 로그인해주세요.", "Please sign in again."],
+  notConfigured: [
+    "이 환경에서는 자동 검색·추출을 쓸 수 없습니다. 직접 입력해주세요.",
+    "Automatic lookup is unavailable here. Enter the details manually.",
+  ],
+  search_not_configured: [
+    "식당 검색이 아직 설정되지 않았습니다. 지도에서 직접 위치를 지정해주세요.",
+    "Restaurant search is not set up yet. Pick the location on the map.",
+  ],
+  search_failed: [
+    "식당 검색에 실패했습니다. 다시 시도해주세요.",
+    "Restaurant search failed. Please try again.",
+  ],
+  extract_not_configured: [
+    "메뉴 추출이 아직 설정되지 않았습니다. 직접 입력해주세요.",
+    "Menu extraction is not set up yet. Enter menus manually.",
+  ],
+  extract_failed: [
+    "메뉴 추출에 실패했습니다. 다시 시도해주세요.",
+    "Menu extraction failed. Please try again.",
+  ],
+  invalid_images: [
+    "5MB 이하의 JPG, PNG, WebP 사진을 1~5장 선택해주세요.",
+    "Choose 1–5 JPG, PNG or WebP photos under 5 MB.",
+  ],
 };
 export function message(e, idx, fallback) {
   return notices[e?.message]?.[idx] || fallback;
